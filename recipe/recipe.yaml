@@ -35,9 +35,8 @@ tests:
         - etc/conda/test-files/verapdf/**
         - ${{ "share" if unix else "Library" }}/verapdf/**
   - files:
-      source:
-        - Matterhorn-Protocol-1-1.pdf
       recipe:
+        - Matterhorn-Protocol-1-1.pdf
         - run_test.py
     requirements:
       run:
@@ -46,9 +45,8 @@ tests:
     script:
       - python run_test.py
   - files:
-      source:
-        - Matterhorn-Protocol-1-1.pdf
       recipe:
+        - Matterhorn-Protocol-1-1.pdf
         - run_test.py
     requirements:
       run:

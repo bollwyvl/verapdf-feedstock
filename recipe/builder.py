@@ -57,7 +57,6 @@ def build() -> int:
     return (
         mvn(["versions:set", f"-DnewVersion={PKG_VERSION}"])
         or mvn(["clean"])
-        or mvn(["licenses"])
         or mvn(["install", "-DskipTests"])
     )
 
