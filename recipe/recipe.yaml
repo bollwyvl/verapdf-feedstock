@@ -16,6 +16,9 @@ build:
   number: 0
   script:
     - python ${{ RECIPE_DIR }}/builder.py
+  files:
+    exclude:
+      - Matterhorn-Protocol-1-1.pdf
 
 requirements:
   build:
@@ -32,33 +35,25 @@ tests:
         - verapdf
         - verapdf-gui
       files:
-        - etc/conda/test-files/verapdf/**
         - ${{ "share" if unix else "Library" }}/verapdf/**
-  - files:
-      recipe:
-        - Matterhorn-Protocol-1-1.pdf
-        - run_test.py
-    requirements:
+  - requirements:
       run:
         - pytest
         - openjdk ${{ openjdk_min }}.*
     script:
-      - python run_test.py
-  - files:
-      recipe:
-        - Matterhorn-Protocol-1-1.pdf
-        - run_test.py
-    requirements:
+      file: run_test.py
+  - requirements:
       run:
         - pytest
     script:
-      - python run_test.py
+      file: run_test.py
 
 about:
   license: GPL-3.0-or-later OR MPL-2.0
   license_file:
     - LICENSE.GPL
     - LICENSE.MPL
+    - third-party-licenses/**
   summary: Command line and GUI industry supported PDF/A and PDF/UA Validation
   homepage: https://github.com/veraPDF/veraPDF-apps
   documentation: https://docs.verapdf.org

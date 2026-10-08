@@ -1,11 +1,11 @@
 import os
-import sys
-import subprocess
-import zipfile
-import tempfile
 import shutil
-import textwrap
 import stat
+import subprocess
+import sys
+import tempfile
+import textwrap
+import zipfile
 from pprint import pprint
 from pathlib import Path
 import platform
@@ -20,9 +20,15 @@ INSTALL_SCRIPT = "verapdf-install.bat" if WIN else "verapdf-install"
 RG_PATH = Path(r"C:\Miniforge\Library\bin\rg.exe")
 
 SRC_DIR = Path(os.environ["SRC_DIR"])
+RECIPE_DIR = Path(os.environ["RECIPE_DIR"])
 PKG_VERSION = os.environ["PKG_VERSION"]
 PREFIX = Path(os.environ["PREFIX"])
+
+POM = SRC_DIR / "pom.xml"
 DEST = PREFIX / ("Library/verapdf" if WIN else "share/verapdf")
+LICENSES = SRC_DIR / "third-party-licenses"
+
+EXAMPLE_GOOD = RECIPE_DIR / "Matterhorn-Protocol-1-1.pdf"
 
 WHICH_MAVEN = (
     shutil.which("mvn")
@@ -35,7 +41,11 @@ if not WHICH_MAVEN:
     sys.exit(1)
 
 MVN_EXE = Path(WHICH_MAVEN)
-MVN_OPTS = [str(MVN_EXE), "--batch-mode"]
+MVN_OPTS = [
+    str(MVN_EXE),
+    "--batch-mode",
+    f"-Dmaven.repo.local={SRC_DIR / '.m2'}",
+]
 
 WIN_TEMPLATE = """
 @echo off
@@ -45,18 +55,18 @@ call "{script_src}" %*
 
 def mvn(args) -> int:
     final_args = list(map(str, [*MVN_OPTS, *args]))
-    print(">>>", "\t".join(final_args), flush=True)
+    print("\n\n>>>", "\t".join(final_args), "\n\n", flush=True)
     rc = subprocess.call(final_args)
     if rc:
         sys.exit(rc)
-    print("...  OK", "\t".join(final_args), flush=True)
+    print("\n\n...  OK", "\t".join(final_args), "\n\n", flush=True)
     return rc
 
 
 def build() -> int:
     return (
-        mvn(["versions:set", f"-DnewVersion={PKG_VERSION}"])
-        or mvn(["clean"])
+        mvn(["clean"])
+        or mvn(["versions:set", f"-DnewVersion={PKG_VERSION}"])
         or mvn(["install", "-DskipTests"])
     )
 
@@ -120,6 +130,7 @@ def deploy() -> int:
             make_bat_wrapper(script_src, script_dest)
         else:
             script_dest.symlink_to(script_src)
+    shutil.copy2(EXAMPLE_GOOD, DEST / "documents" / EXAMPLE_GOOD.name)
     return 0
 
 
@@ -141,18 +152,20 @@ def clean() -> int:
     return 0
 
 
-def main() -> int:
-    build()
-    install()
-    deploy()
-    clean()
+def licenses() -> int:
+
+    mvn(
+        [
+            "org.codehaus.mojo:license-maven-plugin:download-licenses",
+            "-Dlicense.excludedScopes=system,test,provided,import"
+            "-Dlicense.errorRemedy=warn",
+        ]
+    )
+    LICENSES.mkdir(parents=True)
+    for app in ["cli", "gui"]:
+        shutil.copytree(SRC_DIR / app / "target/generated-resources", LICENSES / app)
     return 0
 
 
 if __name__ == "__main__":
-    sys.exit(
-        build()
-        or install()
-        or deploy()
-        or clean()
-    )
+    sys.exit(build() or install() or deploy() or licenses() or clean())
