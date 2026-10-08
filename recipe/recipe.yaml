@@ -1,8 +1,8 @@
 schema_version: 1
 
 context:
-  version: "1.31.91"
-  openjdk_min: "9"
+  version: "1.31.190"
+  openjdk_min: "11"
 
 package:
   name: verapdf
@@ -10,7 +10,7 @@ package:
 
 source:
   - url: https://github.com/veraPDF/veraPDF-apps/archive/refs/tags/v${{ version }}.tar.gz
-    sha256: 75b0adef746ae7fa42b971b73747a7e469c4945e3e008272b20a2f046f8f819e
+    sha256: 323edfd7860d96996a8883193a1740a8ae009f3298a94d2280137f33d6ec6be3
   - url: https://pdfa.org/wp-content/uploads/2021/04/Matterhorn-Protocol-1-1.pdf
     sha256: b8bf0b00fd789ef8d8548d2eeb7e83194db394d9f1be741f2d0ef1d62bff50c6
 
@@ -22,12 +22,18 @@ build:
 requirements:
   build:
     - maven
-    - python >=3.9
+    - python >=3.11
     - openjdk ${{ openjdk_min }}.*
   run:
     - openjdk >=${{ openjdk_min }}
 
 tests:
+  - package_contents:
+      strict: true
+      bin:
+        - verapdf
+      files:
+        - ${{ "share" if unix else "Library" }}/verapdf/**
   - files:
       source:
         - Matterhorn-Protocol-1-1.pdf
