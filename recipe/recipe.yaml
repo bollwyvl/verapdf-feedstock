@@ -11,8 +11,6 @@ package:
 source:
   - url: https://github.com/veraPDF/veraPDF-apps/archive/refs/tags/v${{ version }}.tar.gz
     sha256: 323edfd7860d96996a8883193a1740a8ae009f3298a94d2280137f33d6ec6be3
-  - url: https://pdfa.org/wp-content/uploads/2021/04/Matterhorn-Protocol-1-1.pdf
-    sha256: b8bf0b00fd789ef8d8548d2eeb7e83194db394d9f1be741f2d0ef1d62bff50c6
 
 build:
   number: 0
@@ -32,7 +30,9 @@ tests:
       strict: true
       bin:
         - verapdf
+        - verapdf-gui
       files:
+        - etc/conda/test-files/verapdf/**
         - ${{ "share" if unix else "Library" }}/verapdf/**
   - files:
       source:

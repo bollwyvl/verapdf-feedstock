@@ -43,19 +43,23 @@ call "{script_src}" %*
 """
 
 
-def mvn(args):
+def mvn(args) -> int:
     final_args = list(map(str, [*MVN_OPTS, *args]))
     print(">>>", "\t".join(final_args), flush=True)
     rc = subprocess.call(final_args)
     if rc:
-        sys.exit(1)
+        sys.exit(rc)
     print("...  OK", "\t".join(final_args), flush=True)
+    return rc
 
 
-def build():
-    mvn(["versions:set", f"-DnewVersion={PKG_VERSION}"])
-    mvn(["clean"])
-    mvn(["install", "-DskipTests"])
+def build() -> int:
+    return (
+        mvn(["versions:set", f"-DnewVersion={PKG_VERSION}"])
+        or mvn(["clean"])
+        or mvn(["licenses"])
+        or mvn(["install", "-DskipTests"])
+    )
 
 
 def show(msg: str, path: Path) -> None:
@@ -63,7 +67,7 @@ def show(msg: str, path: Path) -> None:
     print(textwrap.indent(path.read_text(**UTF8), "\t\t"), flush=True)
 
 
-def install():
+def install() -> int:
     src_auto_install = SRC_DIR / "auto-install-tmp.xml"
 
     zip_name = f"verapdf-greenfield-{PKG_VERSION}-installer.zip"
@@ -96,9 +100,10 @@ def install():
         rc = subprocess.call(str_args, cwd=str(inst_dir))
         if rc:
             sys.exit(rc)
+        return rc
 
 
-def deploy():
+def deploy() -> int:
     for exe_name in EXE_NAMES:
         if WIN:
             script_src = DEST / f"{exe_name}.bat"
@@ -116,13 +121,15 @@ def deploy():
             make_bat_wrapper(script_src, script_dest)
         else:
             script_dest.symlink_to(script_src)
+    return 0
 
 
-def make_bat_wrapper(script_src: Path, script_dest: Path):
+def make_bat_wrapper(script_src: Path, script_dest: Path) -> int:
     script_dest.write_text(WIN_TEMPLATE.format(script_src=str(script_src.resolve())))
+    return 0
 
 
-def clean():
+def clean() -> int:
     for path in [DEST / "Uninstaller"]:
         print("... cleaning", path, flush=True)
         shutil.rmtree(path)
@@ -132,6 +139,7 @@ def clean():
             "... removing ripgrep for https://github.com/conda/conda-build/issues/4357"
         )
         RG_PATH.unlink()
+    return 0
 
 
 def main() -> int:
@@ -143,4 +151,9 @@ def main() -> int:
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    sys.exit(
+        build()
+        or install()
+        or deploy()
+        or clean()
+    )
