@@ -1,6 +1,5 @@
 import os
 import shutil
-import stat
 import subprocess
 import sys
 import tempfile
@@ -27,6 +26,7 @@ PREFIX = Path(os.environ["PREFIX"])
 POM = SRC_DIR / "pom.xml"
 DEST = PREFIX / ("Library/verapdf" if WIN else "share/verapdf")
 LICENSES = SRC_DIR / "third-party-licenses"
+SCRIPT_RUNNER = ["start", "/w"] if WIN else ["bash"]
 
 EXAMPLE_GOOD = RECIPE_DIR / "Matterhorn-Protocol-1-1.pdf"
 
@@ -103,11 +103,12 @@ def install() -> int:
 
         script = inst_dir / INSTALL_SCRIPT
 
-        str_args = [*map(str, [script, tmp_auto_install.name])]
+        str_args = [*map(str, [*SCRIPT_RUNNER, script, tmp_auto_install.name])]
+        print(script, "\n", textwrap.indent(script.read_text(**UTF8), "\t"), flush=True)
         print(">>> ", str_args, flush=True)
-        script.chmod(script.stat().st_mode | stat.S_IEXEC)
-        rc = subprocess.call(str_args, cwd=str(inst_dir))
+        rc = subprocess.call(str_args, cwd=str(inst_dir.resolve()))
         if rc:
+            print("!!! FAIL", rc, *str_args, flush=True)
             sys.exit(rc)
         return rc
 
