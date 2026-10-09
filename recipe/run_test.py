@@ -38,6 +38,7 @@ def _verapdf(
         stderr=PIPE,
         encoding="utf-8",
         cwd=str(cwd) if cwd else None,
+        shell=False,
     )
     rc, out, err = res.returncode, res.stdout, res.stderr
     print("\n\n".join(["STDOUT", out, "STDERR", err, "RC", f"{rc}"]))
