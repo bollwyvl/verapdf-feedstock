@@ -49,10 +49,10 @@ MVN_OPTS = [
     f"-Dmaven.repo.local={SRC_DIR / '.m2'}",
 ]
 
-WIN_TEMPLATE = """
-@echo off
-call "{script_src}" %*
-"""
+WIN_TEMPLATE = [
+    "@echo off",
+    'call "{script_src}" %*'
+]
 
 
 def mvn(args) -> int:
@@ -137,7 +137,11 @@ def deploy() -> int:
 
 
 def make_bat_wrapper(script_src: Path, script_dest: Path) -> int:
-    script_dest.write_text(WIN_TEMPLATE.format(script_src=str(script_src.resolve())))
+    print("... writing", script_dest, "\n", flush=True)
+    win_nl = "\r\n"
+    text = win_nl.join(WIN_TEMPLATE).format(script_src=str(script_src.resolve()))
+    print(textwrap.indent(text, "\t"), "\n", flush=True)
+    script_dest.write_text(text, newline="\r\n", **UTF8)
     return 0
 
 
