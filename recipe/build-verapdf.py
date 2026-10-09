@@ -104,7 +104,7 @@ def install() -> int:
         show("... wrote", tmp_auto_install)
 
         str_args = [
-            *map(str, [JAVA_EXE, "-jar", *tdp.glob("*.jar"), tmp_auto_install.name])
+            *map(str, [JAVA_EXE, "-jar", *tdp.rglob("*.jar"), tmp_auto_install])
         ]
         print(">>> ", str_args, flush=True)
         rc = subprocess.call(str_args, cwd=str(inst_dir.resolve()))
