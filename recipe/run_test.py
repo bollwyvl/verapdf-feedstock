@@ -30,15 +30,15 @@ def _verapdf(
     check_rc: int = 0,
     cwd: Path | None = None,
 ) -> CompletedProcess[str]:
-    str_args = list(map(str, [_find_cmd("verapdf"), *args]))
+    str_args = list(map(str, ["verapdf", *args]))
     print(">>>", *str_args, flush=True)
     res: CompletedProcess = run(
-        str_args,
+        " ".join(str_args),
         stdout=PIPE,
         stderr=PIPE,
         encoding="utf-8",
         cwd=str(cwd) if cwd else None,
-        shell=False,
+        shell=True,
     )
     rc, out, err = res.returncode, res.stdout, res.stderr
     print("\n\n".join(["STDOUT", out, "STDERR", err, "RC", f"{rc}"]))
