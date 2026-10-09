@@ -28,10 +28,17 @@ def _verapdf(
     check_stdout: str,
     check_empty_stderr: bool = True,
     check_rc: int = 0,
+    cwd: Path | None = None,
 ) -> CompletedProcess[str]:
     str_args = list(map(str, [_find_cmd("verapdf"), *args]))
     print(">>>", *str_args, flush=True)
-    res: CompletedProcess = run(str_args, stdout=PIPE, stderr=PIPE, encoding="utf-8")
+    res: CompletedProcess = run(
+        str_args,
+        stdout=PIPE,
+        stderr=PIPE,
+        encoding="utf-8",
+        cwd=str(cwd) if cwd else None,
+    )
     rc, out, err = res.returncode, res.stdout, res.stderr
     print("\n\n".join(["STDOUT", out, "STDERR", err, "RC", f"{rc}"]))
     assert check_stdout in out
@@ -61,17 +68,20 @@ def test_cmd_version() -> None:
         (0, "PASS", "Matterhorn-Protocol-1-1.pdf"),
     ],
 )
-def test_cmd_validate(expect_rc: int, expect_stdout: str, docname: str) -> None:
+def test_cmd_validate(
+    tmp_path: Path, expect_rc: int, expect_stdout: str, docname: str
+) -> None:
     doc = SHARE_DOCS / docname
-    assert doc.is_file()
+    shutil.copy2(doc, tmp_path / doc.name)
     _verapdf(
         "--format",
         "text",
         "--flavour",
         "ua1",
-        doc,
+        doc.name,
         check_rc=expect_rc,
         check_stdout=expect_stdout,
+        cwd=tmp_path,
     )
 
 

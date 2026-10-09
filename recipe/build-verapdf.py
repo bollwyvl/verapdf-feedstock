@@ -51,7 +51,7 @@ MVN_OPTS = [
 
 WIN_TEMPLATE = [
     "@echo off",
-    'call "{script_src}" %*'
+    'call "{script_src}" %*',
 ]
 
 
