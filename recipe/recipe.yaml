@@ -9,16 +9,13 @@ package:
   version: ${{ version }}
 
 source:
-  - url: https://github.com/veraPDF/veraPDF-apps/archive/refs/tags/v${{ version }}.tar.gz
-    sha256: 323edfd7860d96996a8883193a1740a8ae009f3298a94d2280137f33d6ec6be3
+  url: https://github.com/veraPDF/veraPDF-apps/archive/refs/tags/v${{ version }}.tar.gz
+  sha256: 323edfd7860d96996a8883193a1740a8ae009f3298a94d2280137f33d6ec6be3
 
 build:
   number: 0
   script:
-    - python ${{ RECIPE_DIR }}/builder.py
-  files:
-    exclude:
-      - Matterhorn-Protocol-1-1.pdf
+    file: build-verapdf.py
 
 requirements:
   build:
@@ -45,6 +42,7 @@ tests:
   - requirements:
       run:
         - pytest
+        - openjdk !=${{ openjdk_min }}
     script:
       file: run_test.py
 
