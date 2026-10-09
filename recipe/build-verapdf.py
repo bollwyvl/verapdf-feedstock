@@ -30,17 +30,19 @@ SCRIPT_RUNNER = ["start", "/w"] if WIN else ["bash"]
 
 EXAMPLE_GOOD = RECIPE_DIR / "Matterhorn-Protocol-1-1.pdf"
 
-WHICH_MAVEN = (
-    shutil.which("mvn")
-    or shutil.which("mvn.exe")
-    or shutil.which("mvn.bat")
-    or shutil.which("mvn.cmd")
-)
 
-if not WHICH_MAVEN:
+def anywhich(what: str) -> Path:
+    for ext in ["", ".exe", ".bat", ".cmd"]:
+        found = shutil.which(f"{what}{ext}")
+        if found:
+            return Path(found)
+    print("can't find", what)
     sys.exit(1)
 
-MVN_EXE = Path(WHICH_MAVEN)
+
+JAVA_EXE = anywhich("java")
+MVN_EXE = anywhich("mvn")
+
 MVN_OPTS = [
     str(MVN_EXE),
     "--batch-mode",
@@ -101,10 +103,9 @@ def install() -> int:
         )
         show("... wrote", tmp_auto_install)
 
-        script = inst_dir / INSTALL_SCRIPT
-
-        str_args = [*map(str, [*SCRIPT_RUNNER, script, tmp_auto_install.name])]
-        print(script, "\n", textwrap.indent(script.read_text(**UTF8), "\t"), flush=True)
+        str_args = [
+            *map(str, [JAVA_EXE, "-jar", *tdp.glob("*.jar"), tmp_auto_install.name])
+        ]
         print(">>> ", str_args, flush=True)
         rc = subprocess.call(str_args, cwd=str(inst_dir.resolve()))
         if rc:
